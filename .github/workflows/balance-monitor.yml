@@ -1,0 +1,37 @@
+name: Sky8 Balance Monitor
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"   # Every 10 minutes
+
+  workflow_dispatch:
+
+jobs:
+  balance-monitor:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Install Playwright Browser
+        run: npx playwright install chromium
+
+      - name: Create .env
+        run: |
+          echo "URL=${{ secrets.URL }}" >> .env
+          echo "PIN=${{ secrets.PIN }}" >> .env
+          echo "LIMIT=${{ secrets.LIMIT }}" >> .env
+          echo "BOT_TOKEN=${{ secrets.BOT_TOKEN }}" >> .env
+          echo "CHAT_ID=${{ secrets.CHAT_ID }}" >> .env
+
+      - name: Run Balance Monitor
+        run: node src/app.js
