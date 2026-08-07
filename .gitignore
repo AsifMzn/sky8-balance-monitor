@@ -1,0 +1,25 @@
+# Environment variables
+.env
+
+# Node modules
+node_modules/
+
+# Playwright screenshots
+error.png
+screenshots/
+
+# State file (stores alert status)
+state.json
+
+# Logs
+logs/
+*.log
+
+# VS Code settings
+.vscode/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db

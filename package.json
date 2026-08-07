@@ -1,0 +1,26 @@
+{
+  "name": "sky8-balance-monitor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Asifmzn12/sky8-balance-monitor.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Asifmzn12/sky8-balance-monitor/issues"
+  },
+  "homepage": "https://github.com/Asifmzn12/sky8-balance-monitor#readme",
+  "dependencies": {
+    "axios": "^1.19.0",
+    "dotenv": "^17.4.2",
+    "playwright": "^1.62.1"
+  }
+}
