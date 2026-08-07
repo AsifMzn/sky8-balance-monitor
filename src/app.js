@@ -88,7 +88,7 @@ if (Number.isNaN(LIMIT)) {
         if (p1Low || r1Low) {
 
             await sendTelegram(
-                `🚨 SKY8 BALANCE ALERT
+                `🚨 SKY8PAY BALANCE ALERT
 
 ${p1Low ? "🔴" : "🟢"} PayoutP1: ₹ ${payoutP1.toLocaleString("en-IN")}
 ${r1Low ? "🔴" : "🟢"} PayoutR1: ₹ ${payoutR1.toLocaleString("en-IN")}
@@ -114,7 +114,7 @@ Threshold:
         });
 
         await sendTelegram(
-            `❌ SKY8 Balance Monitor Failed
+            `❌ SKY8PAY Balance Monitor Failed
 
 ${err.message}`
         );
