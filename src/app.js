@@ -2,14 +2,18 @@ require("dotenv").config();
 
 const { chromium } = require("playwright");
 const sendTelegram = require("./telegram");
-const { loadState, saveState } = require("./state");
-
-const LIMIT = Number(process.env.LIMIT || 1000000);
 
 function parseAmount(text) {
     return Number(
-        text.replace(/[₹,\s]/g, "")
+        String(text).replace(/[₹,\s]/g, "")
     );
+}
+
+const LIMIT = parseAmount(process.env.LIMIT || "1000000");
+
+if (Number.isNaN(LIMIT)) {
+    console.error("❌ LIMIT env var is not a valid number:", process.env.LIMIT);
+    process.exit(1);
 }
 
 (async () => {
@@ -74,99 +78,30 @@ function parseAmount(text) {
 
         console.log("PayoutR1 :", payoutR1);
 
-        let state = loadState();
+        const p1Low = payoutP1 < LIMIT;
+        const r1Low = payoutR1 < LIMIT;
 
-        // ---------------- P1 ----------------
+        console.log(p1Low ? "🔴 PayoutP1 LOW" : "🟢 PayoutP1 Healthy");
+        console.log(r1Low ? "🔴 PayoutR1 LOW" : "🟢 PayoutR1 Healthy");
 
-        if (payoutP1 < LIMIT) {
+        // Send one combined alert whenever either balance is low
+        if (p1Low || r1Low) {
 
-            console.log("🔴 PayoutP1 LOW");
+            await sendTelegram(
+                `🚨 SKY8 BALANCE ALERT
 
-            if (!state.P1) {
-
-                await sendTelegram(
-                    `🚨 SKY8 BALANCE ALERT
-
-🔴 PayoutP1
-
-Current Balance:
-₹ ${payoutP1.toLocaleString("en-IN")}
+${p1Low ? "🔴" : "🟢"} PayoutP1: ₹ ${payoutP1.toLocaleString("en-IN")}
+${r1Low ? "🔴" : "🟢"} PayoutR1: ₹ ${payoutR1.toLocaleString("en-IN")}
 
 Threshold:
 ₹ ${LIMIT.toLocaleString("en-IN")}`
-                );
-
-                state.P1 = true;
-
-            }
+            );
 
         } else {
 
-            console.log("🟢 PayoutP1 Healthy");
-
-            if (state.P1) {
-
-                await sendTelegram(
-                    `✅ SKY8 BALANCE RECOVERED
-
-🟢 PayoutP1
-
-Current Balance:
-₹ ${payoutP1.toLocaleString("en-IN")}`
-                );
-
-                state.P1 = false;
-
-            }
+            console.log("✅ Both balances healthy, no alert sent.");
 
         }
-
-        // ---------------- R1 ----------------
-
-        if (payoutR1 < LIMIT) {
-
-            console.log("🔴 PayoutR1 LOW");
-
-            if (!state.R1) {
-
-                await sendTelegram(
-                    `🚨 SKY8 BALANCE ALERT
-
-🔴 PayoutR1
-
-Current Balance:
-₹ ${payoutR1.toLocaleString("en-IN")}
-
-Threshold:
-₹ ${LIMIT.toLocaleString("en-IN")}`
-                );
-
-                state.R1 = true;
-
-            }
-
-        } else {
-
-            console.log("🟢 PayoutR1 Healthy");
-
-            if (state.R1) {
-
-                await sendTelegram(
-                    `✅ SKY8 BALANCE RECOVERED
-
-🟢 PayoutR1
-
-Current Balance:
-₹ ${payoutR1.toLocaleString("en-IN")}`
-                );
-
-                state.R1 = false;
-
-            }
-
-        }
-
-        saveState(state);
 
     }
     catch (err) {
