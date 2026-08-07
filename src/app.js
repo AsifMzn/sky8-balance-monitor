@@ -4,7 +4,7 @@ const { chromium } = require("playwright");
 const sendTelegram = require("./telegram");
 const { loadState, saveState } = require("./state");
 
-const LIMIT = Number(process.env.LIMIT || 100000);
+const LIMIT = Number(process.env.LIMIT || 1000000);
 
 function parseAmount(text) {
     return Number(
