@@ -35,8 +35,10 @@ if (Number.isNaN(LIMIT)) {
 
         console.log("🔑 Entering PIN...");
 
-        await page.locator('input[name="pin"]').fill(process.env.PIN);
 
+        await page.locator('input[name="pin"]').fill(process.env.PIN, {
+            timeout: 60000
+        });
         console.log("🖱 Clicking Get Data...");
 
         await page.locator("button.btn-success").click();
@@ -84,7 +86,6 @@ if (Number.isNaN(LIMIT)) {
         console.log(p1Low ? "🔴 PayoutP1 LOW" : "🟢 PayoutP1 Healthy");
         console.log(r1Low ? "🔴 PayoutR1 LOW" : "🟢 PayoutR1 Healthy");
 
-        // Send one combined alert whenever either balance is low
         if (p1Low || r1Low) {
 
             await sendTelegram(
