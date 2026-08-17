@@ -107,18 +107,12 @@ Threshold:
     }
     catch (err) {
 
-        console.error(err);
+        console.error("❌ SKY8PAY Balance Monitor Error:", err.message);
 
         await page.screenshot({
             path: "error.png",
             fullPage: true
         });
-
-        await sendTelegram(
-            `❌ SKY8PAY Balance Monitor Failed
-
-${err.message}`
-        );
 
     }
     finally {
