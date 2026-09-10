@@ -9,7 +9,7 @@ function parseAmount(text) {
     );
 }
 
-const LIMIT = parseAmount(process.env.LIMIT || "1000000");
+const LIMIT = parseAmount(process.env.LIMIT || "4000000");
 
 if (Number.isNaN(LIMIT)) {
     console.error("❌ LIMIT env var is not a valid number:", process.env.LIMIT);
@@ -19,7 +19,7 @@ if (Number.isNaN(LIMIT)) {
 (async () => {
 
     const browser = await chromium.launch({
-        headless: true, // Change to false if you want to see the browser
+        headless: true,
         slowMo: 100
     });
 
@@ -35,10 +35,10 @@ if (Number.isNaN(LIMIT)) {
 
         console.log("🔑 Entering PIN...");
 
-
         await page.locator('input[name="pin"]').fill(process.env.PIN, {
             timeout: 60000
         });
+
         console.log("🖱 Clicking Get Data...");
 
         await page.locator("button.btn-success").click();
@@ -46,7 +46,6 @@ if (Number.isNaN(LIMIT)) {
         await page.waitForTimeout(2000);
 
         const table = page.locator("table").nth(1);
-
         const rows = table.locator("tr");
 
         const balances = {};
@@ -61,38 +60,35 @@ if (Number.isNaN(LIMIT)) {
                 continue;
 
             const name = (await cols.nth(0).innerText()).trim();
-
             const value = (await cols.nth(1).innerText()).trim();
 
             balances[name] = value;
         }
 
-        const payoutP1 = parseAmount(balances["PayoutP1"]);
-
-        const payoutR1 = parseAmount(balances["PayoutR1"]);
+        // Only checking PayoutD1
+        const payoutD1 = parseAmount(balances["PayoutD1"]);
 
         console.log("");
         console.log("===========================");
-        console.log("CURRENT BALANCES");
+        console.log("CURRENT BALANCE");
         console.log("===========================");
 
-        console.log("PayoutP1 :", payoutP1);
+        console.log("PayoutD1 :", payoutD1);
 
-        console.log("PayoutR1 :", payoutR1);
+        const d1Low = payoutD1 < LIMIT;
 
-        const p1Low = payoutP1 < LIMIT;
-        const r1Low = payoutR1 < LIMIT;
+        console.log(
+            d1Low
+                ? "🔴 PayoutD1 LOW"
+                : "🟢 PayoutD1 Healthy"
+        );
 
-        console.log(p1Low ? "🔴 PayoutP1 LOW" : "🟢 PayoutP1 Healthy");
-        console.log(r1Low ? "🔴 PayoutR1 LOW" : "🟢 PayoutR1 Healthy");
-
-        if (p1Low || r1Low) {
+        if (d1Low) {
 
             await sendTelegram(
                 `🚨 SKY8PAY BALANCE ALERT
 
-${p1Low ? "🔴" : "🟢"} PayoutP1: ₹ ${payoutP1.toLocaleString("en-IN")}
-${r1Low ? "🔴" : "🟢"} PayoutR1: ₹ ${payoutR1.toLocaleString("en-IN")}
+🔴 PayoutD1: ₹ ${payoutD1.toLocaleString("en-IN")}
 
 Threshold:
 ₹ ${LIMIT.toLocaleString("en-IN")}`
@@ -100,14 +96,17 @@ Threshold:
 
         } else {
 
-            console.log("✅ Both balances healthy, no alert sent.");
+            console.log("✅ PayoutD1 balance healthy, no alert sent.");
 
         }
 
     }
     catch (err) {
 
-        console.error("❌ SKY8PAY Balance Monitor Error:", err.message);
+        console.error(
+            "❌ SKY8PAY Balance Monitor Error:",
+            err.message
+        );
 
         await page.screenshot({
             path: "error.png",
